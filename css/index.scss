@@ -1,9 +1,36 @@
-td.cell {
-	width: 20px;
-	height: 20px;
-	background-color: gray;
+* {
+    -ms-user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;        
 }
 
-td.open {
-	background-color: white;
+ul {
+	padding: 0;
+}
+
+li {
+	list-style: none;
+}
+
+input {
+	width: 30px;
+}
+
+td {
+	width: 30px;
+	height: 30px;
+	
+	text-align: center;
+	
+	&.cell_unhold {
+		background-color: gray;
+	}
+	
+	&.cell_hold {
+		background-color: aqua;
+	}
+	
+	&.cell_open {
+		background-color: white;
+	}
 }

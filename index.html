@@ -8,8 +8,28 @@
 	<script type="text/javascript" src="js/index.js"></script>
 </head>
 
-<body onload="init()">
+<body>
 	<h1 id="title">Minesweeper</h1>
+	
+	<p class="help">Shiftキー押しながらマスをクリックするとフラグを設置することができます。</p>
+	
+	<ul>難易度：(WxH/地雷数)
+		<li><input type="radio" name="difficulty" value="1" class="difficulty">かんたん (10x10/8)</li>
+		<li><input type="radio" name="difficulty" value="2" class="difficulty">ふつう (16x16/40)</li>
+		<li><input type="radio" name="difficulty" value="3" class="difficulty">むずかしい (24x24/99)</li>
+		<li>
+			<input type="radio" name="difficulty" value="4" class="difficulty">カスタム
+			(W: <input type="number" name="custom" class="custom" min="2">
+			H: <input type="number" name="custom" class="custom" min="2">
+			地雷数: <input type="number" name="custom" class="custom" min="1">)
+		</li>
+
+		<li><button onclick="setting()">設定</button></li>
+	</ul>
+	
+	<p class="bomb">残り爆弾：0</p>
+	<p class="timer">タイマー：0</p>
+	
 	<table id="main" border="1"></table>
 </body>
 </html>
