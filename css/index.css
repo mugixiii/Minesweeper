@@ -15,10 +15,16 @@ input {
 td {
   width: 30px;
   height: 30px;
-  text-align: center; }
-  td.cell_unhold {
-    background-color: gray; }
-  td.cell_hold {
-    background-color: aqua; }
-  td.cell_open {
-    background-color: white; }
+  text-align: center;
+  /*
+  &.cell_unhold {
+  	background-color: gray;
+  }
+  
+  &.cell_hold {
+  	background-color: aqua;
+  }
+  
+  &.cell_open {
+  	background-color: white;
+  }*/ }

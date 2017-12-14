@@ -3,9 +3,9 @@ var h;
 var bomb;
 var flag;
 var cell = [];
-var opened = 0;
 var timer = 0;
-var color = ['blue', 'green', 'red', 'orange', 'yellow', 'purple', 'gray', 'black'];
+var countColor = ['blue', 'green', 'red', 'orange', 'yellow', 'purple', 'gray', 'black'];
+var boxColor = ['gray', 'white', 'red', 'aqua'];
 
 var bombLeft = document.getElementsByClassName("bomb");
 var custom = document.getElementsByClassName("custom");
@@ -27,7 +27,6 @@ var difficultySetting = [
 function setting() {
 	if (!isSet) {
 		var difficulty = document.getElementsByClassName("difficulty");
-		var difficultyValue;
 
 		for (var i = 0; i < difficulty.length; i++) {
 			if (difficulty[i].checked) {
@@ -52,25 +51,56 @@ function setting() {
 		}
 	
 		isSet = true;
-		flag = bomb;
 
 		init();
 	}
 }
 
-function init() {	
-	var main = document.getElementById("main");
+function createTable() {
+	started = false;
+	cleared = false;
 	
+	var table = document.createElement("table");
+	table.id = "main";
+	
+	var row = table.insertRow(-1);
+	
+	var th1 = row.insertCell(-1);
+	var th2 = row.insertCell(-1);
+	var th3 = row.insertCell(-1);
+	
+	th1.innerHTML = "残り爆弾：0"
+	th1.className = "bomb";
+	
+	th2.innerHTML = "<button onclick='reset()'>リセット</button>";
+	th2.className = "reset";
+	
+	th3.innerHTML = "タイマー：0";
+	th3.className = "timer";
+	
+	table.border = 1;
+	
+	document.body.appendChild(table);
+}
+
+function init() {
+	createTable();
+	
+	var main = document.getElementById("main");
+			
+	flag = bomb;
 	bombLeft[0].textContent = "残り爆弾：" + flag;
 	
 	for (var i = 0; i < h; i++) {
-		cell [i] = [];
+		cell[i] = [];
 		var tr = document.createElement("tr");
 		
 		for (var j = 0; j < w; j++) {
 			var td = document.createElement("td");
+			
 			td.addEventListener("click", click);
 			td.className = "cell_unhold";
+			td.style.backgroundColor = boxColor[0];
 			
 			td.y = i;
 			td.x = j;
@@ -113,24 +143,39 @@ function count(x, y) {
 }
 
 function open(x, y) {
+	var c = cell[y][x];
+	
+	flip(c);	
+	
+	var n = count(x, y);
+	
+	if (n == 0) {
+		openMultipleCell(x, y);
+	} else {
+		c.textContent = n;
+		c.style.color = countColor[n - 1];				
+	}
+}
+
+function openMultipleCell(x, y) {
 	for (var j = y - 1; j <= y + 1; j++) {
 		for (var i = x - 1; i <= x + 1; i++) {
 			if (cell[j] && cell[j][i]) {
 				var c = cell[j][i];
-
+				
 				if (c.opened || c.bomb || c.className == "cell_hold") {
 					continue;
 				}
-				
+
 				flip(c);
 
 				var n = count(i, j);
 
 				if (n == 0) {
-					open(i, j);
+					openMultipleCell(i, j);
 				} else {
 					c.textContent = n;
-					c.style.color = color[n-1];
+					c.style.color = countColor[n-1];
 				}
 			}
 		}
@@ -140,21 +185,31 @@ function open(x, y) {
 function flip(cell) {
 	cell.className = "cell_open";
 	cell.opened = true;
+	cell.style.backgroundColor = boxColor[1];
 	
-	if (++opened >= (w * h - bomb)) {
+	var a = document.getElementsByClassName("cell_open");
+	console.log("opened" + a.length);
+	
+	if (a.length >= (w * h - bomb)) {
 		document.getElementById("title").textContent = "Good Job!";
+		var unopened = document.getElementsByClassName("cell_unopened");
 		cleared = true;
+		clearInterval(timerId);		
 	}
 }
+
+var timerId;
 
 function click(e) {	
 	if (!cleared) {
 		if (event.shiftKey) {
 			if (this.className == "cell_unhold" && flag > 0) {
 				this.className = "cell_hold";
+				this.style.backgroundColor = boxColor[3];
 				flag--;
 			} else if (this.className == "cell_hold") {
 				this.className = "cell_unhold";
+				this.style.backgroundColor = boxColor[0];
 				flag++;
 			}
 
@@ -166,34 +221,42 @@ function click(e) {
 				cell.forEach(function (tr) {
 					tr.forEach(function (td) {
 						if (td.bomb) {
-							td.textContent = "+";
-							td.style.backgroundColor = 'red';
+							td.textContent = String.fromCharCode(9728);
+							td.style.backgroundColor = boxColor[2];
 						}
 					})
 				});
 
 				document.getElementById("title").textContent = "Game Over";
 				cleared = true;
+				clearInterval(timerId);
 			} else {
 				open(src.x, src.y);			
 			}		
 		}
 	}
 	
-	if (!started) {
-		countup();
+	if (!started && !cleared) {
+		timerId = setInterval(function() {
+			timer++;
+			timeCount[0].textContent = "タイマー：" + timer;
+
+			console.log(timer);
+		}, 1000);
 		
 		started = true;
 	}
 }
 
-function countup() {
-	if (!cleared) {
-		setTimeout(countup, 1000);
+function refresh() {
+	location.reload();
+}
 
-		timeCount[0].textContent = "タイマー：" + timer;
-		timer++;
-	} else {
-		clearTimeout(countup);
-	}
+function reset() {
+	clearInterval(timerId);
+	timer = 0;
+
+	document.getElementById("main").remove();	
+		
+	init();
 }
