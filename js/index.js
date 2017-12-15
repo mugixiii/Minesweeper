@@ -5,7 +5,7 @@ var flag;
 var cell = [];
 var timer = 0;
 var countColor = ['blue', 'green', 'red', 'orange', 'yellow', 'purple', 'gray', 'black'];
-var boxColor = ['gray', 'white', 'red', 'aqua'];
+var boxColor = ['gray', 'white', 'red', 'aqua', 'yellow'];
 
 var bombLeft = document.getElementsByClassName("bomb");
 var custom = document.getElementsByClassName("custom");
@@ -24,6 +24,8 @@ var difficultySetting = [
 	[undefined, undefined, undefined]	// カスタム
 ];
 
+var timerId;
+
 function setting() {
 	if (!isSet) {
 		var difficulty = document.getElementsByClassName("difficulty");
@@ -33,7 +35,13 @@ function setting() {
 				
 				if (i == 3) {
 					for (var j = 0; j < 3; j++) {
-						difficultySetting[i][j] = custom[j].value;
+						if (custom[0].value >= 2 && custom[1].value >= 2 && custom[2].value >= 1 &&
+						    (custom[0].value * custom[1].value > custom[2].value)) {
+							difficultySetting[i][j] = custom[j].value;
+						} else {
+							alert("正しく入力してください。");
+							return;
+						}
 					}
 				}
 				
@@ -46,7 +54,7 @@ function setting() {
 		}
 		
 		if (!difficultySelected) {
-			alert("難易度を選択してください");
+			alert("難易度を選択してください。");
 			return;
 		}
 	
@@ -69,18 +77,40 @@ function createTable() {
 	var th2 = row.insertCell(-1);
 	var th3 = row.insertCell(-1);
 	
-	th1.innerHTML = "残り爆弾：0"
+	th1.innerHTML = "0";
 	th1.className = "bomb";
 	
-	th2.innerHTML = "<button onclick='reset()'>リセット</button>";
+	th2.innerHTML = "<button onclick='reset()' class='resetButton'><img src='resources/refresh.png' class='resetImg'></button>";
 	th2.className = "reset";
 	
-	th3.innerHTML = "タイマー：0";
+	th3.innerHTML = "0";
 	th3.className = "timer";
 	
 	table.border = 1;
 	
+	if (w == 2) {
+		th1.colSpan = th2.colSpan = th3.colSpan = 2;
+	} else if (w == 3) {
+		th1.colSpan = th2.colSpan = th3.colSpan = 1;
+	} else if (w > 3) {
+		if (w % 2 == 0) {
+			th1.colSpan = th3.colSpan = (w - 2) / 2;
+			th2.colSpan = 2;
+		} else {
+			th1.colSpan = th3.colSpan = (w - 3) / 2;
+			th2.colSpan = 3;
+		}		
+	}
+	
 	document.body.appendChild(table);
+
+	var btn = document.getElementsByClassName("resetButton");
+	var img = document.getElementsByClassName("resetImg");
+	
+	btn[0].style.verticalAlign = img[0].style.verticalAlign = "middle";
+	btn[0].style.padding = img[0].style.padding = "1px";
+	btn[0].style.backgroundColor = img[0].style.backgroundColor = "white";
+	img[0].style.width = img[0].style.height = "24px";
 }
 
 function init() {
@@ -89,7 +119,7 @@ function init() {
 	var main = document.getElementById("main");
 			
 	flag = bomb;
-	bombLeft[0].textContent = "残り爆弾：" + flag;
+	bombLeft[0].textContent = flag;
 	
 	for (var i = 0; i < h; i++) {
 		cell[i] = [];
@@ -106,6 +136,11 @@ function init() {
 			td.x = j;
 			cell[i][j] = td;
 			
+			if (w == 2) {
+				td.colSpan = 3;
+				td.style.height = "50px";
+			}
+			
 			tr.appendChild(td);
 		}
 		
@@ -114,8 +149,8 @@ function init() {
 	
 	for (var i = 0; i < bomb; i++) {
 		while (true) {
-			var x = Math.floor(Math.random() * w);
-			var y = Math.floor(Math.random() * h);
+			var x = Math.floor(Math.random() * h);
+			var y = Math.floor(Math.random() * w);
 			
 			if (!cell[x][y].bomb) {
 				cell[x][y].bomb = true;
@@ -187,18 +222,25 @@ function flip(cell) {
 	cell.opened = true;
 	cell.style.backgroundColor = boxColor[1];
 	
-	var a = document.getElementsByClassName("cell_open");
-	console.log("opened" + a.length);
+	var cellOpened = document.getElementsByClassName("cell_open");
 	
-	if (a.length >= (w * h - bomb)) {
+	if (cellOpened.length >= (w * h - bomb)) {
+		var cellHold = document.getElementsByClassName("cell_hold");
+		var cellUnopened = document.getElementsByClassName("cell_unopened");
+		
+		for (var i = 0; i < cellHold.length; i++) {
+			cellHold[i].style.backgroundColor = boxColor[4];
+		}
+
+		for (var i = 0; i < cellUnopened.length; i++) {
+			cellUnopened[i].style.backgroundColor = boxColor[4];
+		}
+		
 		document.getElementById("title").textContent = "Good Job!";
-		var unopened = document.getElementsByClassName("cell_unopened");
 		cleared = true;
-		clearInterval(timerId);		
+		clearInterval(timerId);
 	}
 }
-
-var timerId;
 
 function click(e) {	
 	if (!cleared) {
@@ -213,7 +255,7 @@ function click(e) {
 				flag++;
 			}
 
-			bombLeft[0].textContent = "残り爆弾：" + flag;
+			bombLeft[0].textContent = flag;
 		} else if (this.className == "cell_unhold") {
 			var src = e.currentTarget;
 
@@ -224,7 +266,7 @@ function click(e) {
 							td.textContent = String.fromCharCode(9728);
 							td.style.backgroundColor = boxColor[2];
 						}
-					})
+					});
 				});
 
 				document.getElementById("title").textContent = "Game Over";
@@ -239,9 +281,7 @@ function click(e) {
 	if (!started && !cleared) {
 		timerId = setInterval(function() {
 			timer++;
-			timeCount[0].textContent = "タイマー：" + timer;
-
-			console.log(timer);
+			timeCount[0].textContent = timer;
 		}, 1000);
 		
 		started = true;
@@ -256,6 +296,7 @@ function reset() {
 	clearInterval(timerId);
 	timer = 0;
 
+	document.getElementById("title").textContent = "Minesweeper";
 	document.getElementById("main").remove();	
 		
 	init();
