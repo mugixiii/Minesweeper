@@ -226,14 +226,14 @@ function flip(cell) {
 	
 	if (cellOpened.length >= (w * h - bomb)) {
 		var cellHold = document.getElementsByClassName("cell_hold");
-		var cellUnopened = document.getElementsByClassName("cell_unopened");
+		var cellUnhold = document.getElementsByClassName("cell_unhold");
 		
 		for (var i = 0; i < cellHold.length; i++) {
 			cellHold[i].style.backgroundColor = boxColor[4];
 		}
 
-		for (var i = 0; i < cellUnopened.length; i++) {
-			cellUnopened[i].style.backgroundColor = boxColor[4];
+		for (var i = 0; i < cellUnhold.length; i++) {
+			cellUnhold[i].style.backgroundColor = boxColor[4];
 		}
 		
 		document.getElementById("title").textContent = "Good Job!";
